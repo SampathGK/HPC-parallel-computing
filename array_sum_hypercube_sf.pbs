@@ -1,0 +1,18 @@
+#!/bin/bash
+#PBS -N hello_mpi
+#PBS -l walltime=00:02:00
+#PBS -l nodes=2:ppn=4
+#PBS -q edu_shared
+#PBS -j oe
+#
+## Move to the directory where the job was submitted
+#
+cd $PBS_O_WORKDIR
+#
+#  setup MPI programming environment
+#
+module load tools/mpich2-1.5-gcc
+#
+# Run mpi job
+#
+mpirun -machinefile $PBS_NODEFILE -np $PBS_NP ./array_sum_hypercube_sf
