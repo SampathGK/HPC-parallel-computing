@@ -15,4 +15,4 @@ module load tools/mpich2-1.5-gcc
 #
 # Run mpi job
 #
-mpirun -machinefile $PBS_NODEFILE -np $PBS_NP ./array_sum_hypercube_sf
+mpirun -machinefile $PBS_NODEFILE -np $PBS_NP ./array_sum_star

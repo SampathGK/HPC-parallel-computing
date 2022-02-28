@@ -16,10 +16,10 @@ Author  : Sampath GK
 method scatters pieces of a large array(called mother array) from source node to every node,
 and returns the pointer to array containing a part of the mother array sent by the source node.
 */
-int* one_to_all_bc(int d, int my_rank, int arr_size)
+int* one_to_all_bc(int k, int my_rank, int arr_size)
 {
     int i, *mother_arr, mother_arr_size, rank_source = 0, *arr;
-    mother_arr_size = (int)(arr_size * pow(2, d));
+    mother_arr_size = (int)(arr_size * k);
     arr = (int *)malloc(arr_size * sizeof(int));
 
     //Source Node Only : creates and initiates the mother array
@@ -48,7 +48,7 @@ int* one_to_all_bc(int d, int my_rank, int arr_size)
 method calculates sum of local array at each node and gathers these sums in the source node
 and at source node, calculates the final sum before printing it.
 */
-void single_node_acc(int d, int my_rank, int *arr, int arr_size)
+void single_node_acc(int k, int my_rank, int *arr, int arr_size)
 { 
     int i, sum, rank_source = 0, *inter_sum_arr;
 
@@ -59,7 +59,7 @@ void single_node_acc(int d, int my_rank, int *arr, int arr_size)
     //Source Node Only : create an array for receiving from each node, a sum of a array piece
     if (my_rank == rank_source)
     {
-        inter_sum_arr = (int*)malloc(sizeof(int)*(int)pow(2, d));
+        inter_sum_arr = (int*)malloc(sizeof(int)*k);
     }
 
     MPI_Gather(
@@ -76,7 +76,7 @@ void single_node_acc(int d, int my_rank, int *arr, int arr_size)
     //Source Node Only : add up all the array-piece sum gathered from all nodes
     if(my_rank == rank_source){
         sum = 0;
-        for( i = 0; i < (int)pow(2, d); ++i)
+        for( i = 0; i < k; ++i)
             sum += inter_sum_arr[i];
         printf("Result of array addition : %d\n", sum);
     }
@@ -84,15 +84,21 @@ void single_node_acc(int d, int my_rank, int *arr, int arr_size)
 
 int main(int argc, char **argv)
 {
-    int *arr, arr_size = 5000, dim = 3, my_rank;
+    int *arr, arr_size = 1000, k = 8, my_rank;
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
+    double t1 = MPI_Wtime();
+
     // Decomposition of a big array
-    arr = one_to_all_bc(dim, my_rank, arr_size);
+    arr = one_to_all_bc(k, my_rank, arr_size);
 
     // Reduction
-    single_node_acc(dim, my_rank, arr, arr_size);
+    single_node_acc(k, my_rank, arr, arr_size);
+
+    double t2 = MPI_Wtime();
+    if(my_rank == 0)
+        printf("Execution time : %f\n", (t2-t1));
 
     MPI_Finalize();
     return 0;

@@ -12,6 +12,8 @@ Author  : Sampath GK
 #include <math.h>
 #include <stdlib.h>
 
+double t1, t2;
+
 /*
 This method does one to all broadcast with Store and Forward Routing
 Decomposition of a large array is achieved using MPI_SEND & MPI_RECV primitives.
@@ -24,11 +26,14 @@ int* one_to_all_bc(int d, int my_rank, int *arr, int *arr_size)
 
     if (my_rank == 0)
     {
-        int numbers[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int numbers[] = {-1,0,1};
         arr = (int *)malloc(*arr_size * sizeof(int));
         for (i = 0; i < *arr_size; ++i)
-            arr[i] = i;
+            arr[i] = numbers[i%3];
+        t1 = MPI_Wtime();
     }
+
+
 
     int mask = ((int)pow(2, d)) - 1;
     for (i = d - 1; i >= 0; --i)
@@ -115,18 +120,30 @@ void single_node_acc(int d, int my_rank, int *arr, int arr_size)
     }
 
     //all reduction done
-    if(my_rank == 0)
+    if(my_rank == 0){
         printf("Result of array addition : %d\n", sum);
+        double t2 = MPI_Wtime();
+        printf("Execution time : %f\n", (t2-t1));
+    }
 }
 
 int main(int argc, char **argv)
 {
-    int rank, *arr, arr_size, dim;
-    arr_size = 40000; dim = 3;
+    int rank, *arr, arr_size, dim, p;
+
+    /*
+    Parameters of the experiment manipulated here
+    no_of_processors = pow(2,dim)
+    arr_size initially assigned the total size of the array (n)
+    */
+    arr_size = 1000000; 
 
     MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &p);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    dim = (int)log2(p);
+    
     // Decomposition
     arr = one_to_all_bc(dim, rank, arr, &arr_size);
 

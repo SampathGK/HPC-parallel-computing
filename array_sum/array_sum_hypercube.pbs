@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -N hello_mpi
 #PBS -l walltime=00:02:00
-#PBS -l nodes=2:ppn=4
+#PBS -l nodes=8:ppn=4
 #PBS -q edu_shared
 #PBS -j oe
 #
@@ -15,4 +15,4 @@ module load tools/mpich2-1.5-gcc
 #
 # Run mpi job
 #
-mpirun -machinefile $PBS_NODEFILE -np $PBS_NP ./array_sum_hypercube_ct
+mpirun -machinefile $PBS_NODEFILE -np $PBS_NP ./array_sum_hypercube
